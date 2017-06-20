@@ -341,7 +341,7 @@ public class EditActivity extends AppCompatActivity implements Toolbar.OnMenuIte
             encryptedTitle = AESCrypt.encrypt(password, titleEdit.getText().toString());
             encryptedBody = AESCrypt.encrypt(password, bodyEdit.getText().toString());
         } catch(GeneralSecurityException e) {
-
+            System.out.println(e);
         }
         // Package everything and send back to activity with OK
         intent.putExtra(NOTE_TITLE, encryptedTitle);

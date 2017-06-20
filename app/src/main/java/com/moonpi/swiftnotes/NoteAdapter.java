@@ -100,11 +100,17 @@ class NoteAdapter extends BaseAdapter implements ListAdapter {
                 title = noteObject.getString(NOTE_TITLE);
                 try {
                     title = AESCrypt.decrypt("Secret password", title);
-                } catch(GeneralSecurityException e) {}
+                } catch(GeneralSecurityException e) {
+                    System.out.println(e);
+
+                }
                 body = noteObject.getString(NOTE_BODY);
                 try {
                     body = AESCrypt.decrypt("Secret password", body);
-                } catch(GeneralSecurityException e) {}
+                } catch(GeneralSecurityException e) {
+                    System.out.println(e);
+
+                }
                 colour = noteObject.getString(NOTE_COLOUR);
 
                 if (noteObject.has(NOTE_FONT_SIZE))
