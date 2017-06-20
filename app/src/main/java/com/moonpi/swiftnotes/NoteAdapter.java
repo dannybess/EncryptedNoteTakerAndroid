@@ -18,6 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.GeneralSecurityException;
+
 import static com.moonpi.swiftnotes.DataUtils.*;
 import static com.moonpi.swiftnotes.MainActivity.*;
 
@@ -96,7 +98,13 @@ class NoteAdapter extends BaseAdapter implements ListAdapter {
             try {
                 // Get noteObject data and store in variables
                 title = noteObject.getString(NOTE_TITLE);
+                try {
+                    title = AESCrypt.decrypt("Secret password", title);
+                } catch(GeneralSecurityException e) {}
                 body = noteObject.getString(NOTE_BODY);
+                try {
+                    body = AESCrypt.decrypt("Secret password", body);
+                } catch(GeneralSecurityException e) {}
                 colour = noteObject.getString(NOTE_COLOUR);
 
                 if (noteObject.has(NOTE_FONT_SIZE))
@@ -117,7 +125,6 @@ class NoteAdapter extends BaseAdapter implements ListAdapter {
 
             else
                 favourite.setImageResource(R.drawable.ic_unfav);
-
 
             // If search or delete modes are active -> hide favourite button; Show otherwise
             if (searchActive || deleteActive)

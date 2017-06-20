@@ -21,7 +21,7 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
-
+import java.security.GeneralSecurityException;
 import com.moonpi.swiftnotes.ColorPicker.ColorPickerDialog;
 
 import static com.moonpi.swiftnotes.ColorPicker.ColorPickerSwatch.OnColorSelectedListener;
@@ -334,10 +334,18 @@ public class EditActivity extends AppCompatActivity implements Toolbar.OnMenuIte
      */
     protected void saveChanges() {
         Intent intent = new Intent();
+        String password = "Secret password";
+        String encryptedTitle = "";
+        String encryptedBody = "";
+        try {
+            encryptedTitle = AESCrypt.encrypt(password, titleEdit.getText().toString());
+            encryptedBody = AESCrypt.encrypt(password, bodyEdit.getText().toString());
+        } catch(GeneralSecurityException e) {
 
+        }
         // Package everything and send back to activity with OK
-        intent.putExtra(NOTE_TITLE, titleEdit.getText().toString());
-        intent.putExtra(NOTE_BODY, bodyEdit.getText().toString());
+        intent.putExtra(NOTE_TITLE, encryptedTitle);
+        intent.putExtra(NOTE_BODY, encryptedBody);
         intent.putExtra(NOTE_COLOUR, colour);
         intent.putExtra(NOTE_FONT_SIZE, fontSize);
         intent.putExtra(NOTE_HIDE_BODY, hideBody);

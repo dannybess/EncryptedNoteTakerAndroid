@@ -180,22 +180,16 @@ class DataUtils {
             // Else -> return null
             return null;
         }
-
-
         JSONObject root = null;
         BufferedReader bufferedReader = null;
-
         try {
             // Initialize BufferedReader, read from 'fromFile' and store into root object
             bufferedReader = new BufferedReader(new FileReader(fromFile));
-
             StringBuilder text = new StringBuilder();
             String line;
-
             while ((line = bufferedReader.readLine()) != null) {
                 text.append(line);
             }
-
             root = new JSONObject(text.toString());
 
         } catch (IOException | JSONException e) {

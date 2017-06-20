@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.security.GeneralSecurityException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -723,7 +724,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         listView.setLongClickable(true);
         newNoteButtonVisibility(true);
     }
-
 
     /**
      * Callback method when EditActivity finished adding new note or editing existing note
