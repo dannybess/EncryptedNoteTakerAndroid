@@ -133,7 +133,6 @@ class NoteAdapter extends BaseAdapter implements ListAdapter {
             else
                 favourite.setVisibility(View.VISIBLE);
 
-
             titleView.setText(title);
 
             // If hidBody is true -> hide body of note
@@ -162,14 +161,6 @@ class NoteAdapter extends BaseAdapter implements ListAdapter {
             // Set note background style to rounded card
             relativeLayout.setBackground(roundedCard);
 
-            final Boolean finalFavoured = favoured;
-            favourite.setOnClickListener(new View.OnClickListener() {
-                // If favourite button was clicked -> change that note to favourite or un-favourite
-                @Override
-                public void onClick(View v) {
-                    setFavourite(context, !finalFavoured, position);
-                }
-            });
         }
 
         return convertView;

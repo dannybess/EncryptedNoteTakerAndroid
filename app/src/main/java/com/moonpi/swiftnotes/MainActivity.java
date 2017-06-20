@@ -52,8 +52,7 @@ import static com.moonpi.swiftnotes.DataUtils.saveData;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
-        Toolbar.OnMenuItemClickListener, AbsListView.MultiChoiceModeListener,
-        SearchView.OnQueryTextListener {
+        Toolbar.OnMenuItemClickListener, AbsListView.MultiChoiceModeListener {
 
     private static File localPath, backupPath;
 
@@ -162,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                  int totalItemCount) {}
         });
 
-
         // If newNote button clicked -> Start EditActivity intent with NEW_NOTE_REQUEST as request
         newNote.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -192,57 +190,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      */
     protected void initToolbar() {
         toolbar.setTitle("NoteTaker");
-
         // Inflate menu_main to be displayed in the toolbar
         toolbar.inflateMenu(R.menu.menu_main);
-
         // Set an OnMenuItemClickListener to handle menu item clicks
         toolbar.setOnMenuItemClickListener(this);
 
-        Menu menu = toolbar.getMenu();
-
-        if (menu != null) {
-            // Get 'Search' menu item
-            searchMenu = menu.findItem(R.id.action_search);
-
-            if (searchMenu != null) {
-                // If the item menu not null -> get it's support action view
-                SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
-
-                if (searchView != null) {
-                    // If searchView not null -> set query hint and open/query/close listeners
-                    searchView.setQueryHint(getString(R.string.action_search));
-                    searchView.setOnQueryTextListener(this);
-
-                    MenuItemCompat.setOnActionExpandListener(searchMenu,
-                            new MenuItemCompat.OnActionExpandListener() {
-
-                        @Override
-                        public boolean onMenuItemActionExpand(MenuItem item) {
-                            searchActive = true;
-                            newNoteButtonVisibility(false);
-                            // Disable long-click on listView to prevent deletion
-                            listView.setLongClickable(false);
-
-                            // Init realIndexes array
-                            realIndexesOfSearchResults = new ArrayList<Integer>();
-                            for (int i = 0; i < notes.length(); i++)
-                                realIndexesOfSearchResults.add(i);
-
-                            adapter.notifyDataSetChanged();
-
-                            return true;
-                        }
-
-                        @Override
-                        public boolean onMenuItemActionCollapse(MenuItem item) {
-                            searchEnded();
-                            return true;
-                        }
-                    });
-                }
-            }
-        }
     }
 
 
@@ -542,7 +494,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (index != -1)
                 checkedArray.remove(index);
         }
-
         // Set Toolbar title to 'x Selected'
         mode.setTitle(checkedArray.size() + " " + getString(R.string.action_delete_selected_number));
         adapter.notifyDataSetChanged();
@@ -642,87 +593,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             newNote.animate().cancel();
             newNote.animate().translationY(newNoteButtonBaseYCoordinate + 500);
         }
-    }
-
-
-    /**
-     * Callback method for 'searchView' menu item widget text change
-     * @param s String which changed
-     * @return true if text changed and logic finished, false otherwise
-     */
-    @Override
-    public boolean onQueryTextChange(String s) {
-        s = s.toLowerCase(); // Turn string into lowercase
-
-        // If query text length longer than 0
-        if (s.length() > 0) {
-            // Create new JSONArray and reset realIndexes array
-            JSONArray notesFound = new JSONArray();
-            realIndexesOfSearchResults = new ArrayList<Integer>();
-
-            // Loop through main notes list
-            for (int i = 0; i < notes.length(); i++) {
-                JSONObject note = null;
-
-                // Get note at position i
-                try {
-                    note = notes.getJSONObject(i);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                // If note not null and title/body contain query text
-                // -> Put in new notes array and add i to realIndexes array
-                if (note != null) {
-                    try {
-                        if (note.getString(NOTE_TITLE).toLowerCase().contains(s) ||
-                            note.getString(NOTE_BODY).toLowerCase().contains(s)) {
-
-                            notesFound.put(note);
-                            realIndexesOfSearchResults.add(i);
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            // Create and set adapter with notesFound to refresh ListView
-            NoteAdapter searchAdapter = new NoteAdapter(getApplicationContext(), notesFound);
-            listView.setAdapter(searchAdapter);
-        }
-
-        // If query text length is 0 -> re-init realIndexes array (0 to length) and reset adapter
-        else {
-            realIndexesOfSearchResults = new ArrayList<Integer>();
-            for (int i = 0; i < notes.length(); i++)
-                realIndexesOfSearchResults.add(i);
-
-            adapter = new NoteAdapter(getApplicationContext(), notes);
-            listView.setAdapter(adapter);
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String s) {
-        return false;
-    }
-
-    /**
-     * When search mode is finished
-     * Collapse searchView widget, searchActive to false, reset adapter, enable listView long clicks
-     * and show newNote button
-     */
-    protected void searchEnded() {
-        searchActive = false;
-        adapter = new NoteAdapter(getApplicationContext(), notes);
-        listView.setAdapter(adapter);
-        listView.setLongClickable(true);
-        newNoteButtonVisibility(true);
     }
 
     /**
@@ -843,103 +713,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
-    /**
-     * Favourite or un-favourite the note at position
-     * @param context application context
-     * @param favourite true to favourite, false to un-favourite
-     * @param position position of note
-     */
-    public static void setFavourite(Context context, boolean favourite, int position) {
-        JSONObject newFavourite = null;
-
-        // Get note at position and store in newFavourite
-        try {
-            newFavourite = notes.getJSONObject(position);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        if (newFavourite != null) {
-            if (favourite) {
-                // Set favoured to true
-                try {
-                    newFavourite.put(NOTE_FAVOURED, true);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                // If favoured note is not at position 0
-                // Sort notes array so favoured note is first
-                if (position > 0) {
-                    JSONArray newArray = new JSONArray();
-
-                    try {
-                        newArray.put(0, newFavourite);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Copy contents to new sorted array without favoured element
-                    for (int i = 0; i < notes.length(); i++) {
-                        if (i != position) {
-                            try {
-                                newArray.put(notes.get(i));
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                    // Equal main notes array with new sorted array and reset adapter
-                    notes = newArray;
-                    adapter = new NoteAdapter(context, notes);
-                    listView.setAdapter(adapter);
-
-                    // Smooth scroll to top
-                    listView.post(new Runnable() {
-                        public void run() {
-                            listView.smoothScrollToPosition(0);
-                        }
-                    });
-                }
-
-                // If favoured note was first -> just update object in notes array and notify adapter
-                else {
-                    try {
-                        notes.put(position, newFavourite);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    adapter.notifyDataSetChanged();
-                }
-            }
-
-            // If note not favourite -> set favoured to false and notify adapter
-            else {
-                try {
-                    newFavourite.put(NOTE_FAVOURED, false);
-                    notes.put(position, newFavourite);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                adapter.notifyDataSetChanged();
-            }
-
-            // Save notes to local file
-            saveData(localPath, notes);
-        }
-    }
-
-
     /**
      * If back button pressed while search is active -> collapse view and end search mode
      */
@@ -952,7 +725,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         super.onBackPressed();
     }
-
 
     /**
      * Orientation changed callback method
@@ -975,7 +747,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         super.onConfigurationChanged(newConfig);
     }
-
 
     // Static method to return File at localPath
     public static File getLocalPath() {
